@@ -1,4 +1,4 @@
-package de.inmediasp.AddressBookBasic;
+package de.inmediasp.AddressBook;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
