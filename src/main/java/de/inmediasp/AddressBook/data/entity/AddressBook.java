@@ -9,13 +9,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "ADDRESSBOOK")
-@Getter @Setter @NoArgsConstructor 
 public class AddressBook implements Serializable {
 
 	@Id
@@ -47,7 +43,9 @@ public class AddressBook implements Serializable {
 	@Column(name = "Telefonnummer")
 	private int Telefonnummer;
 
-	
+	public AddressBook() {
+	}
+
 	public AddressBook(long id, String name, String vorname, String str, int postleitzahl, String stadt, String land,
 			String eMail, int telefonnummer) {
 		super();
@@ -75,5 +73,78 @@ public class AddressBook implements Serializable {
 		Telefonnummer = telefonnummer;
 	}
 
+	public long getId() {
+		return Id;
+	}
+
+	public void setId(long id) {
+		Id = id;
+	}
+
+	public String getName() {
+		return Name;
+	}
+
+	public void setName(String name) {
+		Name = name;
+	}
+
+	public String getVorname() {
+		return Vorname;
+	}
+
+	public void setVorname(String vorname) {
+		Vorname = vorname;
+	}
+
+	public String getStr() {
+		return Str;
+	}
+
+	public void setStr(String str) {
+		Str = str;
+	}
+
+	public int getPostleitzahl() {
+		return Postleitzahl;
+	}
+
+	public void setPostleitzahl(int postleitzahl) {
+		Postleitzahl = postleitzahl;
+	}
+
+	public String getStadt() {
+		return Stadt;
+	}
+
+	public void setStadt(String stadt) {
+		Stadt = stadt;
+	}
+
+	public String getLand() {
+		return Land;
+	}
+
+	public void setLand(String land) {
+		Land = land;
+	}
+
+	public String getEMail() {
+		return EMail;
+	}
+
+	public void setEMail(String eMail) {
+		EMail = eMail;
+	}
+
+	public int getTelefonnummer() {
+		return Telefonnummer;
+	}
+
+	public void setTelefonnummer(int telefonnummer) {
+		Telefonnummer = telefonnummer;
+	}
+
 	
+
 }
