@@ -1,6 +1,7 @@
 package de.inmediasp.AddressBook.data.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 import de.inmediasp.AddressBook.data.entity.AddressBook;
 /**
@@ -12,7 +13,7 @@ import de.inmediasp.AddressBook.data.entity.AddressBook;
 * @since   2020-01-07
 */
 @Repository
-public interface AddressBookRepository extends JpaRepository<AddressBook, Long>, AddressBookRepositoryCustomFilter {
+public interface AddressBookRepository extends MongoRepository<AddressBook, Long>, AddressBookRepositoryCustomFilter {
 
 	
 

@@ -2,9 +2,7 @@ package de.inmediasp.AddressBook.data.repository;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+
 
 import de.inmediasp.AddressBook.data.entity.AddressBook;
 
@@ -18,8 +16,8 @@ import de.inmediasp.AddressBook.data.entity.AddressBook;
 */
 public class AddressBookRepositoryCustomFilterImpl implements AddressBookRepositoryCustomFilter  {
 
-	@PersistenceContext
-	private EntityManager em;
+//	@PersistenceContext
+//	private EntityManager em;
 
 	/**
 	 * This method is used to get all the Address Books from the Database with the selected Filters
@@ -28,8 +26,8 @@ public class AddressBookRepositoryCustomFilterImpl implements AddressBookReposit
 	 */
 	@Override
 	public List<AddressBook> CustomFilter(String filter) {
-		Query q = em.createQuery("select a from AddressBook a where " + filter);
-		return (List<AddressBook>) q.getResultList();
+//		Query q = em.createQuery("select a from AddressBook a where " + filter);
+		return (List<AddressBook>) null;
 
 	}
 

@@ -2,45 +2,29 @@ package de.inmediasp.AddressBook.data.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-
-@Entity
-@Table(name = "ADDRESSBOOK")
+@Document(collection = "AddressBook")
 public class AddressBook implements Serializable {
 
 	@Id
-	@Column(name = "ID")
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long Id;
 
-	@Column(name = "Name")
 	private String Name;
 
-	@Column(name = "Vorname")
 	private String Vorname;
 
-	@Column(name = "Str")
 	private String Str;
 
-	@Column(name = "Postleitzahl")
 	private int Postleitzahl;
 
-	@Column(name = "Stadt")
 	private String Stadt;
 
-	@Column(name = "Land")
 	private String Land;
 
-	@Column(name = "EMail")
 	private String EMail;
 
-	@Column(name = "Telefonnummer")
 	private int Telefonnummer;
 
 	public AddressBook() {

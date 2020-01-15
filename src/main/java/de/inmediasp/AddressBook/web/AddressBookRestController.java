@@ -8,9 +8,9 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +38,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 * @version 1.0
 * @since   2020-01-07
 */
+@CrossOrigin
 @RestController
 @RequestMapping("api/AddressBook")
 public class AddressBookRestController {
@@ -194,7 +195,7 @@ public class AddressBookRestController {
 	/**
 	 * This method is used to update an AddressBook information in the Database
 	 * 
-	 * @param newAddressBooks This is the new AddressBooks in a list  
+	 * @param addressBook This is the new AddressBooks in a list
 	 * @return ResponseEntity this return the updated AddressBook
 	 */
 	@PutMapping("/{id}")
