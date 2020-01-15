@@ -9,21 +9,24 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-	
-		 http
-         .httpBasic()
-         .and()
-         .authorizeRequests()
-         .antMatchers(HttpMethod.DELETE, "/api/AddressBook/**").hasRole("USER")
-         .and()
-         .csrf().disable()
-         .formLogin().disable();
-	}
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
 
-	@Autowired
-	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-		auth.inMemoryAuthentication().withUser("admin").password("{noop}admin").roles("USER");
-	}
+        http
+			.httpBasic()
+				.and()
+                .cors()
+                .and()
+                .authorizeRequests()
+                .antMatchers(HttpMethod.DELETE, "/api/AddressBook/**").hasRole("USER")
+                .and()
+                .httpBasic().and()
+                .csrf().disable()
+                .formLogin().disable();
+    }
+
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication().withUser("admin").password("{noop}admin").roles("USER");
+    }
 }

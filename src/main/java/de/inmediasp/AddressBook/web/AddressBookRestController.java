@@ -11,15 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import de.inmediasp.AddressBook.Service.AddressBookService;
 import de.inmediasp.AddressBook.data.entity.AddressBook;
@@ -39,6 +31,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 * @since   2020-01-07
 */
 @RestController
+@CrossOrigin
 @RequestMapping("api/AddressBook")
 public class AddressBookRestController {
 	
