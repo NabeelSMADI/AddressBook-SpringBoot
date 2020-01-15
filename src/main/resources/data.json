@@ -1,0 +1,42 @@
+[
+    {
+        "name": "Smadi1",
+        "vorname": "test1",
+        "email": "Smadi1@g.c",
+        "str": "sewanstr",
+        "postleitzahl": 10319,
+        "stadt": "Berlin",
+        "land": "de",
+        "telefonnummer": 12345
+    },
+    {
+        "name": "Smadi12",
+        "vorname": "test2",
+        "email": "Smadi2@g.c",
+        "str": "sewanstr",
+        "postleitzahl": 10319,
+        "stadt": "Berlin",
+        "land": "de",
+        "telefonnummer": 12345
+    },
+    {
+        "name": "Smadi3",
+        "vorname": "test3",
+        "email": "Smadi3@g.c",
+        "str": "^123",
+        "postleitzahl": 123,
+        "stadt": "Frankfurt",
+        "land": "de",
+        "telefonnummer": 12345
+    },
+    {
+        "name": "Smadi4",
+        "vorname": "test4",
+        "email": "Smadi4@g.c",
+        "str": "^123",
+        "postleitzahl": 123,
+        "stadt":  "Frankfurt",
+        "land": "de",
+        "telefonnummer": 12345
+    }
+]
