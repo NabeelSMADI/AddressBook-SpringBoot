@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,8 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+
+import javax.annotation.security.PermitAll;
 
 
 /**
@@ -65,6 +68,7 @@ public class AddressBookRestController {
 	 * @param telefonnummer This is the AddressBook telefonnummer Field
 	 * @return <List<AddressBook>> this return a AddressBooks list of the results
 	 */
+	@PermitAll()
 	@GetMapping
 	ResponseEntity<List<AddressBook>> findAllWithFilter(@RequestParam(required = false) String name,
 			@RequestParam(required = false) String vorname, @RequestParam(required = false) String str,
@@ -81,6 +85,7 @@ public class AddressBookRestController {
 	 * @param id This is the AddressBook id 
 	 * @return AddressBook this return an AddressBook of the requested id
 	 */
+	@PermitAll()
 	@GetMapping("/{id}")
 	ResponseEntity<AddressBook> getAddressBookbyId(@PathVariable Long id) {
 		if (addressBookService.exist(id)) {
@@ -99,6 +104,7 @@ public class AddressBookRestController {
 	 * @param newAddressBook This is the new AddressBook  
 	 * @return ResponseEntity this return the new AddressBook and its id in the location Header
 	 */
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CSR')")
 	@PostMapping
 	ResponseEntity addAddressBook(@RequestBody AddressBook newAddressBook) {
 		if (newAddressBook == null) {
@@ -143,6 +149,7 @@ public class AddressBookRestController {
 	 * @param newAddressBooks This is the new AddressBooks in a list  
 	 * @return ResponseEntity this return the new added AddressBooks
 	 */
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CSR')")
 	@PostMapping("/addMulti")
 	ResponseEntity addMultiAddressBooks(@RequestBody List<AddressBook> newAddressBooks) {
 		if (newAddressBooks == null) {
@@ -197,6 +204,7 @@ public class AddressBookRestController {
 	 * @param newAddressBooks This is the new AddressBooks in a list  
 	 * @return ResponseEntity this return the updated AddressBook
 	 */
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@PutMapping("/{id}")
 	ResponseEntity updateAddressBook(@RequestBody AddressBook addressBook, @PathVariable Long id) {
 		if (addressBookService.exist(id)) {
@@ -233,6 +241,7 @@ public class AddressBookRestController {
 	 * 
 	 * @param id This is the AddressBook id
 	 */
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@DeleteMapping("/{id}")
 	ResponseEntity deleteAddressBook(@PathVariable Long id) {
 		if (addressBookService.exist(id)) {
@@ -250,6 +259,7 @@ public class AddressBookRestController {
 	/**
 	 * This method is used to delete all AddressBooks from the database
 	 */
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@DeleteMapping
 	ResponseEntity deleteAllAddressBooks() {
 		addressBookService.deleteAll();
