@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import de.inmediasp.AddressBook.Service.AddressBookService;
@@ -75,6 +78,7 @@ public class AddressBookRestController {
 	 * @return AddressBook this return an AddressBook of the requested id
 	 */
 	@GetMapping("/{id}")
+	@PostAuthorize("hasPermission(returnObject,'Read')")
 	ResponseEntity<AddressBook> getAddressBookbyId(@PathVariable Long id) {
 		if (addressBookService.exist(id)) {
 			return ResponseEntity.status(HttpStatus.OK).body(addressBookService.findById(id));
@@ -93,7 +97,7 @@ public class AddressBookRestController {
 	 * @return ResponseEntity this return the new AddressBook and its id in the location Header
 	 */
 	@PostMapping
-	ResponseEntity addAddressBook(@RequestBody AddressBook newAddressBook) {
+	ResponseEntity addAddressBook(@RequestBody AddressBook newAddressBook, Authentication authentication) {
 		if (newAddressBook == null) {
 			log.info("-------------------------------");
 			log.info("AddressBook object is null");
@@ -122,6 +126,7 @@ public class AddressBookRestController {
 			log.info("AddressBook Email Address is Not Valid");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not Valid Email Address");
 		}
+		newAddressBook.setOwner(authentication.getName());
 		newAddressBook = addressBookService.add(newAddressBook);
 		log.info("-------------------------------");
 		log.info("AddressBook with the id:" + newAddressBook.getId() + " is added");
@@ -137,7 +142,7 @@ public class AddressBookRestController {
 	 * @return ResponseEntity this return the new added AddressBooks
 	 */
 	@PostMapping("/addMulti")
-	ResponseEntity addMultiAddressBooks(@RequestBody List<AddressBook> newAddressBooks) {
+	ResponseEntity addMultiAddressBooks(@RequestBody List<AddressBook> newAddressBooks, Authentication authentication) {
 		if (newAddressBooks == null) {
 			log.info("-------------------------------");
 			log.info("AddressBook list object is null");
@@ -177,6 +182,7 @@ public class AddressBookRestController {
 				log.info("AddressBook Email Address is Not Valid");
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not Valid Email Address");
 			}
+			newAddressBook.setOwner(authentication.getName());
 		}
 		newAddressBooks = addressBookService.addAll(newAddressBooks);
 		log.info("-------------------------------");
@@ -244,6 +250,7 @@ public class AddressBookRestController {
 	 * This method is used to delete all AddressBooks from the database
 	 */
 	@DeleteMapping
+	@PreAuthorize("hasPermission(null,'deleteAll')")
 	ResponseEntity deleteAllAddressBooks() {
 		addressBookService.deleteAll();
 		log.info("-------------------------------");
