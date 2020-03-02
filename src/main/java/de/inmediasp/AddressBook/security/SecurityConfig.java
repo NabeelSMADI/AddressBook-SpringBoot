@@ -1,63 +1,107 @@
 package de.inmediasp.AddressBook.security;
 
+import org.keycloak.KeycloakSecurityContext;
+import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
+import org.keycloak.adapters.springsecurity.KeycloakConfiguration;
+import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
+import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
+import org.keycloak.adapters.springsecurity.management.HttpSessionManager;
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.keycloak.representations.AccessToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
+import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
-@Configuration
+import javax.servlet.http.HttpServletRequest;
+
+
+@KeycloakConfiguration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
-	@Autowired
-	private AddressBookUserDetailsService userDetailsService;
 
+	/**
+	 * Define security constraints for the application resources.
+	 */
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-
-		// Entry points
-		http.authorizeRequests()
-				.antMatchers("/users/signin").permitAll()
-				.antMatchers(HttpMethod.GET,"/api/AddressBook/**").permitAll()
-				// Disallow everything else..
+		super.configure(http);
+		http.cors().and().csrf().disable()
+				.authorizeRequests()
 				.anyRequest().authenticated();
 
-		// Disable CSRF (cross site request forgery)
-		http.csrf().disable();
-
-		// No session will be created or used by spring security
-		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
-		http.addFilterBefore(new JwtTokenFilter(userDetailsService), UsernamePasswordAuthenticationFilter.class);
 	}
 
-	@Override
-	public void configure(WebSecurity web) throws Exception {
-		// Allow swagger to be accessed without authentication
-		web.ignoring().antMatchers("/v2/api-docs")
-				.antMatchers("/configuration/**")
-				.antMatchers("/webjars/**")
-				.antMatchers("/public");
+
+
+	/**
+	 * Registers the KeycloakAuthenticationProvider with the authentication manager.
+	 *
+	 * Since Spring Security requires that role names start with "ROLE_",
+	 * a SimpleAuthorityMapper is used to instruct the KeycloakAuthenticationProvider
+	 * to insert the "ROLE_" prefix.
+	 *
+	 * e.g. Librarian -> ROLE_Librarian
+	 *
+	 * Should you prefer to have the role all in uppercase, you can instruct
+	 * the SimpleAuthorityMapper to convert it by calling:
+	 * {@code grantedAuthorityMapper.setConvertToUpperCase(true); }.
+	 * The result will be: Librarian -> ROLE_LIBRARIAN.
+	 */
+	@Autowired
+	public void configureGlobal(AuthenticationManagerBuilder auth) {
+		SimpleAuthorityMapper grantedAuthorityMapper = new SimpleAuthorityMapper();
+		grantedAuthorityMapper.setPrefix("ROLE_");
+
+		KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
+		keycloakAuthenticationProvider.setGrantedAuthoritiesMapper(grantedAuthorityMapper);
+		auth.authenticationProvider(keycloakAuthenticationProvider);
 	}
 
+	/**
+	 * Defines the session authentication strategy.
+	 *
+	 * RegisterSessionAuthenticationStrategy is used because this is a public application
+	 * from the Keycloak point of view.
+	 */
 	@Bean
 	@Override
-	public AuthenticationManager authenticationManagerBean() throws Exception {
-		return super.authenticationManagerBean();
+	protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
+		return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
 	}
 
+	/**
+	 * Define an HttpSessionManager bean only if missing.
+	 *
+	 * This is necessary because since Spring Boot 2.1.0, spring.main.allow-bean-definition-overriding
+	 * is disabled by default.
+	 */
 	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder(12);
+	@Override
+	@ConditionalOnMissingBean(HttpSessionManager.class)
+	protected HttpSessionManager httpSessionManager() {
+		return new HttpSessionManager();
+	}
+
+
+	@Bean
+	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+	public AccessToken accessToken() {
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+		return ((KeycloakSecurityContext) ((KeycloakAuthenticationToken) request.getUserPrincipal()).getCredentials()).getToken();
 	}
 
 }
