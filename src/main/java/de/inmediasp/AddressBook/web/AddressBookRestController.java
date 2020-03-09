@@ -2,23 +2,24 @@ package de.inmediasp.AddressBook.web;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
-import org.keycloak.representations.AccessToken;
+
+import de.inmediasp.AddressBook.security.AccessControl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreFilter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import de.inmediasp.AddressBook.Service.AddressBookService;
 import de.inmediasp.AddressBook.data.entity.AddressBook;
-
-import javax.annotation.security.PermitAll;
 
 
 /**
@@ -38,13 +39,14 @@ public class AddressBookRestController {
 
 	private final AddressBookService addressBookService;
 
-	private final AccessToken accessToken;
+
+	private AccessControl accessControl;
 
 	@Autowired
-	public AddressBookRestController(AddressBookService addressBookService, AccessToken accessToken) {
+	public AddressBookRestController(AddressBookService addressBookService, AccessControl accessControl) {
 		super();
 		this.addressBookService = addressBookService;
-		this.accessToken = accessToken;
+		this.accessControl = accessControl;
 	}
 
 	/**
@@ -61,18 +63,19 @@ public class AddressBookRestController {
 	 * @return <List<AddressBook>> this return a AddressBooks list of the results
 	 */
 	@GetMapping
-	ResponseEntity<List<AddressBook>> findAllWithFilter(@RequestParam(required = false) String name,
-			@RequestParam(required = false) String vorname, @RequestParam(required = false) String str,
-			@RequestParam(required = false) Integer postleitzahl, @RequestParam(required = false) String stadt,
-			@RequestParam(required = false) String land, @RequestParam(required = false) String email,
-			@RequestParam(required = false) Integer telefonnummer) {
+	@PostFilter("(@accessControl.checkGroupByUser(filterObject.owner) and hasAuthority('OP_GET_ADDRESSBOOK_OWN')) or hasAuthority('OP_GET_ADDRESSBOOK')")
+	List<AddressBook> findAllWithFilter(@RequestParam(required = false) String name,
+														@RequestParam(required = false) String vorname, @RequestParam(required = false) String str,
+														@RequestParam(required = false) Integer postleitzahl, @RequestParam(required = false) String stadt,
+														@RequestParam(required = false) String land, @RequestParam(required = false) String email,
+														@RequestParam(required = false) Integer telefonnummer) {
 
-		AccessToken.Access access = accessToken.getRealmAccess();
-		log.info("access.getRoles()" +access.getRoles().toString());
 		Collection<SimpleGrantedAuthority> authorities = (Collection<SimpleGrantedAuthority>)    SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 		log.info("authorities" + authorities.toString());
-		return ResponseEntity.status(HttpStatus.OK)
-				.body(addressBookService.filter(name, vorname, str, postleitzahl, stadt, land, email, telefonnummer));
+		log.info("getName" +  SecurityContextHolder.getContext().getAuthentication().getName());
+		log.info("getPrincipal" +  SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+		//log.info("getGroupsList" + accessControl.getGroupsList().toString());
+		return addressBookService.filter(name, vorname, str, postleitzahl, stadt, land, email, telefonnummer);
 	}
 
 	/**
@@ -81,9 +84,11 @@ public class AddressBookRestController {
 	 * @param id This is the AddressBook id 
 	 * @return AddressBook this return an AddressBook of the requested id
 	 */
+	@PostAuthorize("(@accessControl.checkGroupByUser(returnObject.body.Owner) and hasAuthority('OP_GET_ADDRESSBOOK_OWN')) or hasAuthority('OP_GET_ADDRESSBOOK')")
 	@GetMapping("/{id}")
 	ResponseEntity<AddressBook> getAddressBookbyId(@PathVariable Long id) {
 		if (addressBookService.exist(id)) {
+			log.info("getOwner" + addressBookService.findById(id).getOwner());
 			return ResponseEntity.status(HttpStatus.OK).body(addressBookService.findById(id));
 		} else {
 			log.info("-------------------------------");
@@ -99,7 +104,7 @@ public class AddressBookRestController {
 	 * @param newAddressBook This is the new AddressBook  
 	 * @return ResponseEntity this return the new AddressBook and its id in the location Header
 	 */
-	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CSR')")
+	@PreAuthorize("hasAuthority('OP_ADD_ADDRESSBOOK')")
 	@PostMapping
 	ResponseEntity addAddressBook(@RequestBody AddressBook newAddressBook) {
 		if (newAddressBook == null) {
@@ -130,6 +135,8 @@ public class AddressBookRestController {
 			log.info("AddressBook Email Address is Not Valid");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not Valid Email Address");
 		}
+		String ownerGroup = accessControl.getUserGroupsMap().get(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString()).get(0) ;
+		newAddressBook.setOwner(ownerGroup);
 		newAddressBook = addressBookService.add(newAddressBook);
 		log.info("-------------------------------");
 		log.info("AddressBook with the id:" + newAddressBook.getId() + " is added");
@@ -144,7 +151,7 @@ public class AddressBookRestController {
 	 * @param newAddressBooks This is the new AddressBooks in a list  
 	 * @return ResponseEntity this return the new added AddressBooks
 	 */
-	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CSR')")
+	@PreAuthorize("hasAuthority('OP_ADD_ADDRESSBOOK')")
 	@PostMapping("/addMulti")
 	ResponseEntity addMultiAddressBooks(@RequestBody List<AddressBook> newAddressBooks) {
 		if (newAddressBooks == null) {
@@ -199,7 +206,7 @@ public class AddressBookRestController {
 	 * @param newAddressBooks This is the new AddressBooks in a list  
 	 * @return ResponseEntity this return the updated AddressBook
 	 */
-	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@PostAuthorize("(@accessControl.checkGroupById(#id) and hasAuthority('OP_UPDATE_ADDRESSBOOK_OWN')) or hasAuthority('OP_UPDATE_ADDRESSBOOK')")
 	@PutMapping("/{id}")
 	ResponseEntity updateAddressBook(@RequestBody AddressBook addressBook, @PathVariable Long id) {
 		if (addressBookService.exist(id)) {
@@ -236,7 +243,7 @@ public class AddressBookRestController {
 	 * 
 	 * @param id This is the AddressBook id
 	 */
-	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@PreAuthorize("(@accessControl.checkGroupById(#id) and hasAuthority('OP_DELETE_ADDRESSBOOK_OWN')) or hasAuthority('OP_DELETE_ADDRESSBOOK')")
 	@DeleteMapping("/{id}")
 	ResponseEntity deleteAddressBook(@PathVariable Long id) {
 		if (addressBookService.exist(id)) {
@@ -254,7 +261,7 @@ public class AddressBookRestController {
 	/**
 	 * This method is used to delete all AddressBooks from the database
 	 */
-	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@PreAuthorize("hasAuthority('OP_DELETE_ADDRESSBOOK')")
 	@DeleteMapping
 	ResponseEntity deleteAllAddressBooks() {
 		addressBookService.deleteAll();

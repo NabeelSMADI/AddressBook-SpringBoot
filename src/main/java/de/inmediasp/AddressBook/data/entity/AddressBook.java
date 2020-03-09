@@ -43,11 +43,15 @@ public class AddressBook implements Serializable {
 	@Column(name = "Telefonnummer")
 	private int Telefonnummer;
 
+	@Column(name = "Owner")
+	private String Owner;
+
 	public AddressBook() {
 	}
 
+
 	public AddressBook(long id, String name, String vorname, String str, int postleitzahl, String stadt, String land,
-			String eMail, int telefonnummer) {
+					   String eMail, int telefonnummer,  String owner) {
 		super();
 		Id = id;
 		Name = name;
@@ -58,10 +62,11 @@ public class AddressBook implements Serializable {
 		Land = land;
 		EMail = eMail;
 		Telefonnummer = telefonnummer;
+		Owner = owner;
 	}
-	
-	public AddressBook( String name, String vorname, String str, int postleitzahl, String stadt, String land,
-			String eMail, int telefonnummer) {
+
+	public AddressBook(String name, String vorname, String str, int postleitzahl, String stadt, String land,
+					   String eMail, int telefonnummer,  String owner) {
 		super();
 		Name = name;
 		Vorname = vorname;
@@ -71,6 +76,7 @@ public class AddressBook implements Serializable {
 		Land = land;
 		EMail = eMail;
 		Telefonnummer = telefonnummer;
+		Owner = owner;
 	}
 
 	public long getId() {
@@ -145,6 +151,13 @@ public class AddressBook implements Serializable {
 		Telefonnummer = telefonnummer;
 	}
 
-	
+
+	public String getOwner() {
+		return Owner;
+	}
+
+	public void setOwner(String owner) {
+		Owner = owner;
+	}
 
 }
